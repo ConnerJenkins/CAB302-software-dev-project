@@ -34,4 +34,19 @@ public final class GameService {
     // Scores
     public OptionalInt highScore(User user, GameMode mode) { return store.getHighScore(user.getId(), mode); }
     public List<ScoreRow> leaderboard(GameMode mode, int limit) { return store.leaderboard(mode, limit); }
+
+    // Questions
+    private final QuestionBank qb = new QuestionBank();
+
+    public List<Question> getBasicsQuestions() {
+        return qb.getBasics();
+    }
+
+    public List<Question> getTrigoQuestions() {
+        return qb.getTrigo();
+    }
+
+    public List<Question> getTargetQuestions() {
+        return qb.getTarget();
+    }
 }
