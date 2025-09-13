@@ -1,3 +1,5 @@
+package com.team.game.model;
+
 import java.util.List;
 
 public class Question {

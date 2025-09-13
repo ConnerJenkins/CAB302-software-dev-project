@@ -1,3 +1,5 @@
+package com.team.game.model;
+
 import java.util.*;
 
 public class QuestionBank {
@@ -24,7 +26,7 @@ public class QuestionBank {
         // Q2 - Numeric
         q.add(new Question(
                 "If u = 0, a = 9.8 m/s², t = 5s. What is s?",
-                "123"
+                "122.5"
         ));
 
         q.add(new Question(

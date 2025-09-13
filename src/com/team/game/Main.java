@@ -7,12 +7,48 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.List;
 
 public class Main {
     private static final ZoneId LOCAL_TZ = ZoneId.of("Australia/Brisbane"); // or ZoneId.systemDefault()
     private static final DateTimeFormatter DT_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
 
+    private static List<Question> questionsForMode(GameService svc, GameMode mode) {
+        return switch (mode) {
+            case BASICS -> svc.getBasicsQuestions();
+            case TRIG   -> svc.getTrigoQuestions();
+            case TARGET -> svc.getTargetQuestions();
+        };
+    }
+    private static double parseNumber(String s) {
+
+        s = s.replace("°", "");
+
+        if (s.matches("\\s*[-+]?\\d+\\s*/\\s*\\d+\\s*")) {
+            String[] p = s.split("/");
+            return Double.parseDouble(p[0].trim()) / Double.parseDouble(p[1].trim());
+        }
+        String cleaned = s.replaceAll("[^0-9+\\-eE.]", "");
+        if (cleaned.isEmpty()) throw new NumberFormatException();
+        return Double.parseDouble(cleaned);
+    }
+
+    private static boolean isCorrectAnswer(String input, String expected) {
+        if (expected == null) return false;
+        String a = expected.trim();
+        String b = (input == null ? "" : input.trim());
+        if (a.equalsIgnoreCase(b)) return true;
+
+        try {
+            double da = parseNumber(a);
+            double db = parseNumber(b);
+            double tol = Math.max(1.0, Math.abs(da)) * 1e-3; // 0.1%
+            return Math.abs(da - db) <= tol;
+        } catch (NumberFormatException ignored) {
+            return false;
+        }
+    }
     public static void main(String[] args) {
         System.out.println("cwd = " + System.getProperty("user.dir"));
         System.out.println("db  = data/game.db");
@@ -143,36 +179,61 @@ public class Main {
         };
     }
     private static void startRoundFlow(Scanner in, GameService svc, User user) {
+
         GameMode mode = chooseMode(in);
         if (mode == null) return;
 
         GameSession s = svc.startRound(user, mode);
-        int score = 0, strikes = 0;
         System.out.printf("Started %s round (session id=%d).%n", mode, s.getId());
 
-        while (true) {
-            System.out.printf("[score=%d, strikes=%d]  c) Correct   w) Wrong   f) Finish  >", score, strikes);
-            String cmd = in.nextLine().trim().toLowerCase();
-            if (cmd.equals("c")) {
+        List<Question> questions = questionsForMode(svc, mode);
+        if (questions == null || questions.isEmpty()) {
+            System.out.println("No questions found for mode " + mode + ".");
+            return;
+        }
+
+        int score = 0, strikes = 0;
+
+        for (int i = 0; i < questions.size(); i++) {
+            Question q = questions.get(i);
+
+            System.out.println();
+            System.out.printf("Q%d) %s%n", i + 1, q.getText());
+
+            List<String> opts = q.getOptions();
+            if (opts != null && !opts.isEmpty()) {
+                for (int k = 0; k < opts.size(); k++) {
+                    System.out.printf("  %d) %s%n", k + 1, opts.get(k));
+                }
+            }
+
+            System.out.print("Your answer: ");
+            String input = in.nextLine().trim();
+
+            // If MCQ and user typed a number, map to option text
+            if (opts != null && !opts.isEmpty() && input.matches("\\d+")) {
+                int idx = Integer.parseInt(input) - 1;
+                if (idx >= 0 && idx < opts.size()) input = opts.get(idx);
+            }
+
+            if (isCorrectAnswer(input, q.getAnswer())) {
+                System.out.println("✅ Correct!");
                 svc.submitCorrect(s);
                 score++;
-            } else if (cmd.equals("w")) {
+            } else {
+                System.out.println("❌ Wrong. Correct answer: " + q.getAnswer());
                 svc.submitWrong(s);
                 strikes++;
                 if (strikes >= 3) {
-                    System.out.println("3 strikes reached — round finished automatically.");
+                    System.out.println("3 strikes reached — round finished.");
                     break;
                 }
-            } else if (cmd.equals("f")) {
-                svc.finishRound(s);
-                break;
-            } else {
-                System.out.println("Enter c / w / f");
             }
         }
 
+        svc.finishRound(s);
         int hs = svc.highScore(user, mode).orElse(0);
-        System.out.println("Round finished. Your high score (" + mode + ") = " + hs);
+        System.out.println("Round finished. Score=" + score + ", Strikes=" + strikes + ". Your high score (" + mode + ") = " + hs);
     }
 
 }
