@@ -14,26 +14,18 @@ public class Main {
     private static final DateTimeFormatter DT_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
 
-    private static List<Question> questionsForMode(GameService svc, GameMode mode) {
+    // Pull questions by mode via your GameService (which wraps QuestionBank)
+    private static List<com.team.game.model.Question> questionsForMode(
+            com.team.game.service.GameService svc,
+            com.team.game.model.GameMode mode) {
         return switch (mode) {
             case BASICS -> svc.getBasicsQuestions();
             case TRIG   -> svc.getTrigoQuestions();
             case TARGET -> svc.getTargetQuestions();
         };
     }
-    private static double parseNumber(String s) {
 
-        s = s.replace("°", "");
-
-        if (s.matches("\\s*[-+]?\\d+\\s*/\\s*\\d+\\s*")) {
-            String[] p = s.split("/");
-            return Double.parseDouble(p[0].trim()) / Double.parseDouble(p[1].trim());
-        }
-        String cleaned = s.replaceAll("[^0-9+\\-eE.]", "");
-        if (cleaned.isEmpty()) throw new NumberFormatException();
-        return Double.parseDouble(cleaned);
-    }
-
+    // Tolerant answer check: exact match OR numeric within 0.1% (also accepts 45° and simple fractions)
     private static boolean isCorrectAnswer(String input, String expected) {
         if (expected == null) return false;
         String a = expected.trim();
@@ -48,6 +40,17 @@ public class Main {
         } catch (NumberFormatException ignored) {
             return false;
         }
+    }
+
+    private static double parseNumber(String s) {
+        s = s.replace("°", "");
+        if (s.matches("\\s*[-+]?\\d+\\s*/\\s*\\d+\\s*")) { // simple "p/q"
+            String[] p = s.split("/");
+            return Double.parseDouble(p[0].trim()) / Double.parseDouble(p[1].trim());
+        }
+        String cleaned = s.replaceAll("[^0-9+\\-eE.]", "");
+        if (cleaned.isEmpty()) throw new NumberFormatException();
+        return Double.parseDouble(cleaned);
     }
     public static void main(String[] args) {
         System.out.println("cwd = " + System.getProperty("user.dir"));
@@ -178,29 +181,30 @@ public class Main {
             default -> { System.out.println("Invalid."); yield null; }
         };
     }
-    private static void startRoundFlow(Scanner in, GameService svc, User user) {
-
-        GameMode mode = chooseMode(in);
+    private static void startRoundFlow(java.util.Scanner in,
+                                       com.team.game.service.GameService svc,
+                                       com.team.game.model.User user) {
+        com.team.game.model.GameMode mode = chooseMode(in);
         if (mode == null) return;
 
-        GameSession s = svc.startRound(user, mode);
-        System.out.printf("Started %s round (session id=%d).%n", mode, s.getId());
+        com.team.game.model.GameSession session = svc.startRound(user, mode);
+        System.out.printf("Started %s round (session id=%d).%n", mode, session.getId());
 
-        List<Question> questions = questionsForMode(svc, mode);
+        List<com.team.game.model.Question> questions = questionsForMode(svc, mode);
         if (questions == null || questions.isEmpty()) {
-            System.out.println("No questions found for mode " + mode + ".");
+            System.out.println("No questions found for mode " + mode + " in QuestionBank.");
             return;
         }
 
         int score = 0, strikes = 0;
 
         for (int i = 0; i < questions.size(); i++) {
-            Question q = questions.get(i);
+            var q = questions.get(i);
 
             System.out.println();
             System.out.printf("Q%d) %s%n", i + 1, q.getText());
 
-            List<String> opts = q.getOptions();
+            var opts = q.getOptions();
             if (opts != null && !opts.isEmpty()) {
                 for (int k = 0; k < opts.size(); k++) {
                     System.out.printf("  %d) %s%n", k + 1, opts.get(k));
@@ -218,11 +222,11 @@ public class Main {
 
             if (isCorrectAnswer(input, q.getAnswer())) {
                 System.out.println("✅ Correct!");
-                svc.submitCorrect(s);
+                svc.submitCorrect(session);
                 score++;
             } else {
                 System.out.println("❌ Wrong. Correct answer: " + q.getAnswer());
-                svc.submitWrong(s);
+                svc.submitWrong(session);
                 strikes++;
                 if (strikes >= 3) {
                     System.out.println("3 strikes reached — round finished.");
@@ -231,7 +235,7 @@ public class Main {
             }
         }
 
-        svc.finishRound(s);
+        svc.finishRound(session);
         int hs = svc.highScore(user, mode).orElse(0);
         System.out.println("Round finished. Score=" + score + ", Strikes=" + strikes + ". Your high score (" + mode + ") = " + hs);
     }
