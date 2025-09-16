@@ -94,17 +94,16 @@ public class QuestionBank {
 
     private List<Question> generateTrigo() {
         List<Question> q = new ArrayList<>();
-        q.add(new Question("sin(30°) = ?",
-                "0.5",
-                Arrays.asList("0.5", "0.866", "1", "√3/2")
+        q.add(new Question("Simplify: tan 45° + cos 60°",
+                "1.5",
+                Arrays.asList("1", "1.5", "√2/2", "2")
         ));
-        q.add(new Question("cos(60°) = ?",
-                "0.5",
-                Arrays.asList("0.5", "0.866", "1", "√2/2")
-        ));
-        q.add(new Question("tan(45°) = ?",
+        q.add(new Question("Simplify: (1 - cos²θ) / sin²θ",
                 "1",
-                Arrays.asList("1", "0", "√3", "√3/3")
+                Arrays.asList("1", "cosθ", "tanθ", "cosec²θ")
+        ));
+        q.add(new Question("In a right triangle, θ = 30° and hypotenuse = 10. Find the length of the side opposite θ.",
+                "5"
         ));
         q.add(new Question("If sinθ = 3/5, find cosθ (θ acute).",
                 "0.8"));
