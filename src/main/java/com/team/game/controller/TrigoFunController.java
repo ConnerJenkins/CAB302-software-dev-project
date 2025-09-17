@@ -21,6 +21,7 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class TrigoFunController implements Initializable {
@@ -87,10 +88,14 @@ public class TrigoFunController implements Initializable {
         startGameTimer();
     }
 
+    // Add a method for testing or dependency injection
+    public void setDependencies(GameService gameService, User currentUser) {
+        this.gameService = gameService;
+        this.currentUser = currentUser;
+    }
+
     // Method to get the logged-in user and GameService from Main.java
-    private void initializeFromLogin() {
-        gameService = Main.TrigoApp.getGameService();
-        currentUser = Main.TrigoApp.getCurrentUser();
+    public void initializeFromLogin() {
 
         if (currentUser != null) {
             System.out.println("Using logged-in user: " + currentUser.getUsername());
@@ -143,7 +148,7 @@ public class TrigoFunController implements Initializable {
     public void loadQuestionImage(String imageName) {
         try {
             String imagePath = "/images/" + imageName;
-            Image image = new Image(getClass().getResourceAsStream(imagePath));
+            Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream(imagePath)));
             questionImage.setImage(image);
             System.out.println("Image loaded successfully: " + imageName);
         } catch (Exception e) {
@@ -230,12 +235,21 @@ public class TrigoFunController implements Initializable {
         if (currentQuestionIndex < gameQuestions.size()) {
             currentQuestion = gameQuestions.get(currentQuestionIndex);
             questionLabel.setText("Question " + (currentQuestionIndex + 1) + ": " + currentQuestion.getText());
+
+            if (currentQuestion.getOptions() != null && !currentQuestion.getOptions().isEmpty()) {
+                // If there are options, display them.
+                StringBuilder optionsText = new StringBuilder("Choices: \n");
+                for (int i = 0 ; i < currentQuestion.getOptions().size(); i++) {
+                    optionsText.append("\t").append((char)('A' + i)).append(". ").append(currentQuestion.getOptions().get(i)).append("\n");
+                }
+                questionLabel.setText(questionLabel.getText() + "\n" + optionsText);
+            }
             loadQuestionImage("triangle.png"); // Load default triangle image
         }
     }
 
     // Method to check if the answer is correct (with some flexibility for different formats)
-    private boolean isAnswerCorrect(String userAnswer, String correctAnswer) {
+    public boolean isAnswerCorrect(String userAnswer, String correctAnswer) {
         String normalizedUserAnswer = normalizeAnswer(userAnswer);
         String normalizedCorrectAnswer = normalizeAnswer(correctAnswer);
 
@@ -243,7 +257,7 @@ public class TrigoFunController implements Initializable {
     }
 
     // Method to normalize answers for flexible matching
-    private String normalizeAnswer(String answer) {
+    public String normalizeAnswer(String answer) {
         return answer.toLowerCase()
                 .replaceAll("\\s+", "")  // Remove all whitespace
                 .replace("sqrt(2)/2", "√2/2")  // Handle sqrt notation
@@ -301,7 +315,7 @@ public class TrigoFunController implements Initializable {
             try {
                 gameService.finishRound(currentGameSession);
                 System.out.println("Finished game session in database. Session ID: " + currentGameSession.getId() +
-                                 ", Final Score: " + totalScore + ", Total Strikes: " + highestStrikes);
+                        ", Final Score: " + totalScore + ", Total Strikes: " + highestStrikes);
             } catch (Exception e) {
                 System.err.println("Failed to finish game session: " + e.getMessage());
             }
