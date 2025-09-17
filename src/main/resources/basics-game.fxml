@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.team.game.controller.BasicsGameController">
+    <children>
+        <!-- Header Section -->
+        <HBox alignment="CENTER_LEFT" spacing="5.0" style="-fx-padding:0 50 0 50;">
+            <children>
+                <!-- Score Display -->
+                <Label fx:id="scoreLabel" text="Score: 0" textFill="#B56B37"
+                       style="-fx-font-family: 'Verdana'; -fx-font-size: 20px; -fx-font-weight: bolder;"/>
+
+                <!-- Strikes Display -->
+                <Label fx:id="strikesLabel" text="Strikes: 0/3" textFill="#B56B37"
+                       style="-fx-font-family: 'Verdana'; -fx-font-size: 20px; -fx-font-weight: bolder;"/>
+
+                <!-- Spacer to push title to center -->
+                <Region HBox.hgrow="ALWAYS" />
+
+                <!-- Game Title -->
+                <Label text="Basics" style="-fx-text-fill: #B56B37;">
+                    <font>
+                        <Font name="System Bold" size="96.0" />
+                    </font>
+                </Label>
+            </children>
+        </HBox>
+
+        <!-- Main Content Section -->
+        <VBox spacing="20.0" style="-fx-padding: 30 50 0 50;" VBox.vgrow="ALWAYS">
+            <children>
+                <!-- Question Section -->
+                <VBox>
+                    <children>
+                        <Label fx:id="questionLabel" text="Question will appear here"
+                               style="-fx-font-weight: bold; -fx-font-size: 24px; -fx-text-fill: #B56B37; -fx-wrap-text: true;" />
+                    </children>
+                </VBox>
+
+                <!-- Answer Options (for multiple choice) -->
+                <VBox fx:id="optionsContainer" spacing="10.0" visible="false">
+                    <children>
+                        <HBox spacing="10.0">
+                            <children>
+                                <Button fx:id="option1Button" onAction="#handleOptionSelect"
+                                        style="-fx-background-color: #B56B37; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 200px; -fx-pref-height: 50px;" />
+                                <Button fx:id="option2Button" onAction="#handleOptionSelect"
+                                        style="-fx-background-color: #B56B37; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 200px; -fx-pref-height: 50px;" />
+                            </children>
+                        </HBox>
+                        <HBox spacing="10.0">
+                            <children>
+                                <Button fx:id="option3Button" onAction="#handleOptionSelect"
+                                        style="-fx-background-color: #B56B37; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 200px; -fx-pref-height: 50px;" />
+                                <Button fx:id="option4Button" onAction="#handleOptionSelect"
+                                        style="-fx-background-color: #B56B37; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 200px; -fx-pref-height: 50px;" />
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+
+                <!-- Answer Input (for direct answers) -->
+                <HBox fx:id="inputContainer" spacing="10.0" alignment="CENTER" visible="false">
+                    <children>
+                        <TextField fx:id="answerField" promptText="Type your answer here..."
+                                   style="-fx-pref-width: 300px; -fx-pref-height: 40px; -fx-font-size: 16px;" />
+                        <Button text="Submit" onAction="#handleSubmitAnswer"
+                                style="-fx-background-color: #B56B37; -fx-text-fill: white; -fx-font-size: 16px; -fx-pref-width: 100px; -fx-pref-height: 40px;" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+
+        <!-- Feedback Section -->
+        <VBox alignment="CENTER" style="-fx-padding: 20;">
+            <children>
+                <Label fx:id="feedbackLabel" text="" style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            </children>
+        </VBox>
+    </children>
+</VBox>
