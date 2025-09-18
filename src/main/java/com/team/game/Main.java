@@ -156,10 +156,14 @@ public class Main {
         GameMode mode = chooseMode(in);
         if (mode == null) return;
 
-        // If TRIG mode is selected, launch the GUI
+        // If TRIG or BASICS mode is selected, launch the GUI
         if (mode == GameMode.TRIG) {
             System.out.println("Launching TRIG GUI...");
             launchTrigoGUI(svc, user);
+            return;
+        } else if (mode == GameMode.BASICS) {
+            System.out.println("Launching Basics GUI...");
+            launchBasicsGUI(svc, user);
             return;
         }
 
@@ -284,6 +288,37 @@ public class Main {
         }
     }
 
+    // JavaFX Application class for Basics GUI
+    public static class BasicsApp extends Application {
+        private static GameService gameService;
+        private static User currentUser;
+
+        public static void setUserData(GameService service, User user) {
+            gameService = service;
+            currentUser = user;
+        }
+
+        public static GameService getGameService() {
+            return gameService;
+        }
+
+        public static User getCurrentUser() {
+            return currentUser;
+        }
+
+        @Override
+        public void start(Stage primaryStage) throws Exception {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/basicsgame/basics-game.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root, 1000, 600);
+            primaryStage.setTitle("Basics Game");
+            primaryStage.setScene(scene);
+            primaryStage.setResizable(false);
+            primaryStage.show();
+        }
+    }
+
     // Method to launch the TRIG GUI with user context
     private static void launchTrigoGUI(GameService svc, User user) {
         try {
@@ -292,6 +327,17 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Error launching TRIG GUI: " + e.getMessage());
             System.out.println("TRIG mode is not available in GUI format. Please try other modes.");
+        }
+    }
+
+    // Method to launch the Basics GUI with user context
+    private static void launchBasicsGUI(GameService svc, User user) {
+        try {
+            BasicsApp.setUserData(svc, user);
+            Application.launch(BasicsApp.class);
+        } catch (Exception e) {
+            System.err.println("Error launching Basics GUI: " + e.getMessage());
+            System.out.println("Basics mode is not available in GUI format. Please try other modes.");
         }
     }
 }
