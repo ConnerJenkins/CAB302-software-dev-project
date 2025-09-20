@@ -161,9 +161,16 @@ public class Main {
             System.out.println("Launching TRIG GUI...");
             launchTrigoGUI(svc, user);
             return;
-        } else if (mode == GameMode.BASICS) {
+        }
+        else if (mode == GameMode.BASICS) {
             System.out.println("Launching Basics GUI...");
             launchBasicsGUI(svc, user);
+            return;
+        }
+
+        else if (mode == GameMode.TARGET) {
+            System.out.println("Launching Target GUI...");
+            launchTargetGUI(svc, user);
             return;
         }
 
@@ -316,8 +323,36 @@ public class Main {
             primaryStage.setScene(scene);
             primaryStage.setResizable(false);
             primaryStage.show();
+
+
         }
     }
+
+    // JavaFX app class for Target game GUI
+    public static class TargetApp extends Application {
+        private static GameService gameService;
+        private static User currentUser;
+
+        public static void setUserData(GameService svc, User user) {
+            gameService = svc;
+            currentUser = user;
+        }
+        public static GameService getGameService() { return gameService; }
+        public static User getCurrentUser() { return currentUser; }
+
+        @Override
+        public void start(Stage stage) throws Exception {
+            FXMLLoader loader = new FXMLLoader(TargetApp.class.getResource("/target/target-main.fxml"));
+            Parent root = loader.load();
+            stage.setTitle("Target Game");
+            stage.setScene(new Scene(root));
+            stage.show();
+        }
+    }
+
+
+
+
 
     // Method to launch the TRIG GUI with user context
     private static void launchTrigoGUI(GameService svc, User user) {
@@ -340,4 +375,17 @@ public class Main {
             System.out.println("Basics mode is not available in GUI format. Please try other modes.");
         }
     }
+
+    // Method to launch the TARGET GUI with user context
+    private static void launchTargetGUI(GameService svc, User user) {
+        try {
+            TargetApp.setUserData(svc, user);
+            Application.launch(TargetApp.class);
+        } catch (Exception e) {
+            System.err.println("Error launching Target GUI: " + e.getMessage());
+            System.out.println("TARGET mode is not available in GUI format. Please try other modes.");
+        }
+    }
+
+
 }
