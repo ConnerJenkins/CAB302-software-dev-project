@@ -162,11 +162,11 @@ public class Main {
             launchTrigoGUI(svc, user);
             return;
         }
-        //else if (mode == GameMode.BASICS) {
-          //  System.out.println("Launching Basics GUI...");
-          //  launchBasicsGUI(svc, user);
-          //  return;
-        //}
+        else if (mode == GameMode.BASICS) {
+            System.out.println("Launching Basics GUI...");
+            launchBasicsGUI(svc, user);
+            return;
+        }
 
         else if (mode == GameMode.TARGET) {
             System.out.println("Launching Target GUI...");
