@@ -13,7 +13,7 @@ public final class Database {
     static {
         try {
             Files.createDirectories(Path.of("data"));
-            Class.forName("org.sqlite.JDBC"); // make sure driver is on classpath
+            Class.forName("org.sqlite.JDBC");
         } catch (Exception e) {
             throw new RuntimeException("DB init failed", e);
         }

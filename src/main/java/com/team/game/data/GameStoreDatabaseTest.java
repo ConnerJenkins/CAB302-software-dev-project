@@ -1,7 +1,6 @@
 package main.java.com.team.game.data;
 
-import main.java.com.team.game.data.Database;
-import main.java.com.team.game.data.GameStore;
+
 import main.java.com.team.game.model.GameMode;
 import main.java.com.team.game.model.GameSession;
 import main.java.com.team.game.model.ScoreRow;
@@ -225,15 +224,15 @@ public class GameStoreDatabaseTest {
         List<ScoreRow> basicsTop = store.leaderboard(GameMode.BASICS, 10);
         assertEquals(2, basicsTop.size());
         assertEquals("lb_alice", basicsTop.get(0).getUsername());
-        assertEquals(3, basicsTop.get(0).getHighScore());   // <- was getScore()
+        assertEquals(3, basicsTop.get(0).getHighScore());
         assertEquals("lb_bob", basicsTop.get(1).getUsername());
-        assertEquals(1, basicsTop.get(1).getHighScore());   // <- was getScore()
+        assertEquals(1, basicsTop.get(1).getHighScore());
 
         List<ScoreRow> limited = store.leaderboard(GameMode.BASICS, 1);
         assertEquals(1, limited.size());
         assertEquals("lb_alice", limited.get(0).getUsername());
 
-        assertEquals(3, limited.get(0).getHighScore());     // <- was getScore()
+        assertEquals(3, limited.get(0).getHighScore());
     }
 
     @Test @Order(14)
