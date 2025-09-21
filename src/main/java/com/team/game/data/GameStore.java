@@ -196,10 +196,11 @@ public final class GameStore {
     public List<GameSession> listSessionsByUser(int userId) {
         var out = new ArrayList<GameSession>();
         String sql = """
-            SELECT id,user_id,mode,started_at,ended_at,score,strikes,completed
-            FROM game_session
-            WHERE user_id=? ORDER BY started_at DESC
-            """;
+    SELECT id,user_id,mode,started_at,ended_at,score,strikes,completed
+    FROM game_session
+    WHERE user_id=? 
+    ORDER BY started_at DESC, id DESC   -- <— add id DESC to break ties
+    """;
         try (var c = Database.open(); var ps = c.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (var rs = ps.executeQuery()) { while (rs.next()) out.add(mapSession(rs)); }
