@@ -37,7 +37,7 @@ public class LoginController {
             return;
         }
         try {
-            Optional<User> user = checkUser(u, pw);
+            Optional<User> user = svc.login(u, pw);
             if (user.isPresent()) {
                 onSuccess.accept(user.get());
                 closeWindow();
@@ -58,7 +58,7 @@ public class LoginController {
             return;
         }
         try {
-            User user = registerUser(u, pw);
+            User user = svc.register(u, pw);
             onSuccess.accept(user);
             closeWindow();
         } catch (IllegalStateException dup) {
@@ -66,16 +66,6 @@ public class LoginController {
         } finally {
             Arrays.fill(pw, '\0');
         }
-    }
-
-
-    public Optional<User> checkUser(String username, char[] password) {
-        return svc.login(username, password);
-    }
-
-
-    public User registerUser(String username, char[] password) throws IllegalStateException {
-        return svc.register(username, password);
     }
 
     private void closeWindow() {

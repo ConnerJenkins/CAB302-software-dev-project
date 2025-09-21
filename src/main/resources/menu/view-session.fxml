@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="main.java.com.team.game.controller.ViewSessionController"
+            prefHeight="600.0" prefWidth="800.0"
+            style="-fx-background-color: #f0f0f0;">
+
+    <VBox spacing="20.0" AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="20.0">
+        <padding>
+            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        </padding>
+
+        <!-- Title -->
+        <Label text="MY GAME SESSIONS" textAlignment="CENTER">
+            <font>
+                <Font name="System Bold" size="24.0"/>
+            </font>
+        </Label>
+
+        <Separator/>
+
+        <!-- Sessions Table -->
+        <TableView fx:id="sessionsTable" prefHeight="400.0">
+            <columns>
+                <TableColumn fx:id="idColumn" prefWidth="60.0" text="ID"/>
+                <TableColumn fx:id="modeColumn" prefWidth="100.0" text="Mode"/>
+                <TableColumn fx:id="scoreColumn" prefWidth="80.0" text="Score"/>
+                <TableColumn fx:id="strikesColumn" prefWidth="80.0" text="Strikes"/>
+                <TableColumn fx:id="completedColumn" prefWidth="100.0" text="Completed"/>
+                <TableColumn fx:id="startedColumn" prefWidth="180.0" text="Started"/>
+                <TableColumn fx:id="endedColumn" prefWidth="180.0" text="Ended"/>
+            </columns>
+        </TableView>
+
+        <!-- No sessions message -->
+        <Label fx:id="noSessionsLabel" text="No sessions found." textAlignment="CENTER" visible="false">
+            <font>
+                <Font size="16.0" name="System Italic"/>
+            </font>
+        </Label>
+
+        <!-- Buttons -->
+        <HBox spacing="20.0" alignment="CENTER">
+            <Button fx:id="refreshButton" mnemonicParsing="false" onAction="#handleRefresh"
+                    prefWidth="120.0" prefHeight="40.0" text="Refresh"
+                    style="-fx-font-size: 14px; -fx-background-color: #2196F3; -fx-text-fill: white;"/>
+
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack"
+                    prefWidth="120.0" prefHeight="40.0" text="Back to Menu"
+                    style="-fx-font-size: 14px; -fx-background-color: #757575; -fx-text-fill: white;"/>
+        </HBox>
+
+    </VBox>
+
+</AnchorPane>

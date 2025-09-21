@@ -21,7 +21,7 @@ import java.util.Scanner;
 import main.java.com.team.game.ui.Windows;
 
 
-public class Main {
+public class 1Main {
     private static final ZoneId LOCAL_TZ = ZoneId.of("Australia/Brisbane"); // or ZoneId.systemDefault()
     private static final DateTimeFormatter DT_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z");
@@ -36,7 +36,9 @@ public class Main {
             runConsole(svc);  // old console stuff in here
         } else {
             Windows.openLogin(svc, user -> {
-                Windows.openMenu(svc, user);
+                Thread t = new Thread(() -> runConsoleMenu(svc, user), "ConsoleMenu");
+                t.setDaemon(false);
+                t.start();
             });
         }
     }
@@ -299,36 +301,12 @@ public class Main {
         }
     }
 
-    // JavaFX Application class for Menu GUI
-    public static class MenuApp extends Application {
-        private static GameService gameService;
-        private static User currentUser;
 
-        public static void setUserData(GameService service, User user) {
-            gameService = service;
-            currentUser = user;
-        }
 
-        public static GameService getGameService() {
-            return gameService;
-        }
 
-        public static User getCurrentUser() {
-            return currentUser;
-        }
 
-        @Override
-        public void start(Stage primaryStage) throws Exception {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/menu/menu-main.fxml"));
-            Parent root = loader.load();
 
-            Scene scene = new Scene(root, 500, 600);
-            primaryStage.setTitle("Main Menu");
-            primaryStage.setScene(scene);
-            primaryStage.setResizable(false);
-            primaryStage.show();
-        }
-    }
+
 
     // JavaFX Application class for TRIG GUI
     public static class TrigoApp extends Application {

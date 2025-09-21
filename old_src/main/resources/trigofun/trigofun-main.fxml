@@ -83,9 +83,7 @@
             <HBox alignment="CENTER" spacing="10.0" style="-fx-padding: 10;">
                <children>
                   <TextField minWidth="400" style="-fx-padding: 10; -fx-text-fill: #B56B37; -fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 8;" fx:id="answerField" promptText="Type your answer here..." onAction="#handleSubmitAnswer" />
-                  <Button fx:id="newGameButton" text="New Game" onAction="#handleNewGame"
-                          style="-fx-background-color: #B56B37; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10; -fx-font-size: 16px;"
-                          visible="false" />
+<!--                  <Button text="Submit" onAction="#handleSubmitAnswer" style="-fx-background-color: #FFFFFF; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10;" />-->
                </children>
             </HBox>
 

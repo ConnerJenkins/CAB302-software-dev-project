@@ -427,11 +427,7 @@ public class BasicsGameController implements Initializable {
         optionCButton.setDisable(true);
         optionDButton.setDisable(true);
         submitNumericButton.setDisable(true);
-        numericAnswerField.setDisable(true);
-
-        nextButton.setText("New Game");
-        nextButton.setDisable(false);
-        nextButton.setOnAction(this::handleNewGame);
+        nextButton.setDisable(true);
 
         feedbackLabel.setText(message);
         feedbackLabel.setStyle("-fx-text-fill: blue; -fx-font-size: 18px; -fx-font-weight: bold;");
@@ -439,32 +435,5 @@ public class BasicsGameController implements Initializable {
         questionLabel.setText("Game Over! Final Score: " + score + "/" + gameQuestions.size());
 
         System.out.println("Basics game ended: " + message);
-    }
-
-    @FXML
-    private void handleNewGame(ActionEvent event) {
-        score = 0;
-        strikes = 0;
-        currentQuestionIndex = 0;
-        gameActive = true;
-
-        updateScoreDisplay();
-        updateStrikesDisplay();
-        feedbackLabel.setText("Ready...");
-        feedbackLabel.setStyle("");
-
-        optionAButton.setDisable(false);
-        optionBButton.setDisable(false);
-        optionCButton.setDisable(false);
-        optionDButton.setDisable(false);
-        submitNumericButton.setDisable(false);
-        numericAnswerField.setDisable(false);
-
-        nextButton.setText("Next Question");
-        nextButton.setOnAction(this::handleNextQuestion);
-
-        startGameSession();
-        Collections.shuffle(gameQuestions);
-        displayCurrentQuestion();
     }
 }

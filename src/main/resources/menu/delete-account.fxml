@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="main.java.com.team.game.controller.DeleteAccountController"
+            prefHeight="600.0" prefWidth="600.0"
+            style="-fx-background-color: #f0f0f0;">
+
+    <VBox spacing="10.0" AnchorPane.topAnchor="40.0" AnchorPane.leftAnchor="50.0" AnchorPane.rightAnchor="50.0">
+        <padding>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
+        </padding>
+
+        <!-- Title -->
+        <Label text="DELETE ACCOUNT" textAlignment="CENTER">
+            <font>
+                <Font name="System Bold" size="24.0"/>
+            </font>
+        </Label>
+
+        <Separator/>
+
+        <!-- Warning Section -->
+        <VBox spacing="15.0" style="-fx-background-color: #ffebee; -fx-border-color: #f44336; -fx-border-width: 2px; -fx-border-radius: 5px; -fx-background-radius: 5px;">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            </padding>
+
+            <Label text="This action will permanently delete your account and cannot be undone!" textAlignment="CENTER" wrapText="true"
+                   style="-fx-font-size: 16px; -fx-text-fill: #d32f2f; -fx-font-weight: bold;"/>
+
+            <Label text="All your game sessions, scores, and account data will be lost forever." textAlignment="CENTER" wrapText="true"
+                   style="-fx-font-size: 14px; -fx-text-fill: #d32f2f;"/>
+        </VBox>
+
+        <!-- Current User Display -->
+        <VBox spacing="10.0">
+            <Label text="Account to be deleted:" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <Label fx:id="currentUserLabel" text=""
+                   style="-fx-font-size: 16px; -fx-text-fill: #2196F3; -fx-background-color: #e3f2fd; -fx-padding: 10px; -fx-background-radius: 5px;"/>
+        </VBox>
+
+        <!-- Confirmation Input -->
+        <VBox spacing="10.0">
+            <Label text="Type 'DELETE' to confirm account deletion:" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            <TextField fx:id="confirmationField" prefWidth="200.0" promptText="Type DELETE here"/>
+        </VBox>
+
+        <!-- Status Message -->
+        <Label fx:id="statusLabel" text="" textAlignment="CENTER" wrapText="true" visible="false"
+               style="-fx-font-size: 14px;"/>
+
+        <!-- Buttons -->
+        <HBox spacing="20.0" alignment="CENTER">
+            <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#handleDeleteAccount"
+                    prefWidth="160.0" prefHeight="45.0" text="DELETE ACCOUNT"
+                    style="-fx-font-size: 14px; -fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleCancel"
+                    prefWidth="160.0" prefHeight="45.0" text="Back to Menu"
+                    style="-fx-font-size: 14px; -fx-background-color: #757575; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        </HBox>
+
+    </VBox>
+
+</AnchorPane>

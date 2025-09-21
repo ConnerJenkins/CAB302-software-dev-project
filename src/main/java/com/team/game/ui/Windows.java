@@ -65,4 +65,164 @@ public final class Windows {
             }
         });
     }
+
+    public static void openMenu(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/menu-main.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Main Menu");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Menu window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openGameMode(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/game-mode.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Select Game Mode");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Game Mode window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openBasics(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.BasicsApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.BasicsApp.class.getResource("/basicsgame/basics-game.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Basics Game");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Basics game window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openViewSessions(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/view-session.fxml"));
+                Stage s = new Stage();
+                s.setTitle("My Game Sessions");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening View Sessions window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openDeleteSession(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/delete-session.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Delete Session");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Delete Session window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openChangeUsername(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/change-username.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Change Username");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Change Username window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openChangePassword(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/change-password.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Change Password");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Change Password window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openLeaderboard(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/leaderboard.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Leaderboard");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Leaderboard window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openUsersList(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/users-list.fxml"));
+                Stage s = new Stage();
+                s.setTitle("All Users");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Users List window: " + e.getMessage());
+            }
+        });
+    }
+
+    public static void openDeleteAccount(GameService svc, User user) {
+        FxRuntime.ensureStarted();
+        Platform.runLater(() -> {
+            try {
+                Main.MenuApp.setUserData(svc, user);
+                Parent root = FXMLLoader.load(Main.MenuApp.class.getResource("/menu/delete-account.fxml"));
+                Stage s = new Stage();
+                s.setTitle("Delete Account");
+                s.setScene(new Scene(root));
+                s.show();
+            } catch (Exception e) {
+                System.err.println("Error opening Delete Account window: " + e.getMessage());
+            }
+        });
+    }
 }

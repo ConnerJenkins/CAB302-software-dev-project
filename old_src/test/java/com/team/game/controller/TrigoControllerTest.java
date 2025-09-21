@@ -1,4 +1,4 @@
-package test.java.com.team.game.controller;
+package com.team.game.controller;
 
 
 import main.java.com.team.game.controller.TrigoFunController;

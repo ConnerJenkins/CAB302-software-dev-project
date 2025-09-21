@@ -12,7 +12,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.animation.Timeline;
@@ -47,9 +46,6 @@ public class TrigoFunController implements Initializable {
     @FXML
     private Label feedbackLabel;
 
-    @FXML
-    private Button newGameButton;
-
     // List of questions from QuestionBank
     private List<Question> gameQuestions;
     private QuestionBank questionBank;
@@ -62,9 +58,8 @@ public class TrigoFunController implements Initializable {
     // Game state variables
     private int currentQuestionIndex = 0;
     private int totalScore = 0;
-    private int wrongStrikes = 0; // Changed: Track consecutive wrong answers (strikes)
-    private int highestConsecutiveCorrect = 0; // Changed: Track highest consecutive correct for stats
-    private int currentConsecutiveCorrect = 0; // Changed: Track current consecutive correct
+    private int currentStrikes = 0;
+    private int highestStrikes = 0;
     private Question currentQuestion;
 
     // Timer variables
@@ -101,12 +96,6 @@ public class TrigoFunController implements Initializable {
 
     // Method to get the logged-in user and GameService from Main.java
     public void initializeFromLogin() {
-        try {
-            this.gameService = Main.TrigoApp.getGameService();
-            this.currentUser = Main.TrigoApp.getCurrentUser();
-        } catch (Exception e) {
-            System.err.println("Error initializing from login: " + e.getMessage());
-        }
 
         if (currentUser != null) {
             System.out.println("Using logged-in user: " + currentUser.getUsername());
@@ -187,8 +176,7 @@ public class TrigoFunController implements Initializable {
         // Check if the answer is correct
         if (isAnswerCorrect(userAnswer, currentQuestion.getAnswer())) {
             totalScore++;
-            currentConsecutiveCorrect++;
-            wrongStrikes = 0; // Reset strikes on correct answer
+            currentStrikes++;
             updateScoreDisplay();
             feedbackLabel.setText("Correct!");
             feedbackLabel.setStyle("-fx-text-fill: green; -fx-font-size: 18px; -fx-font-weight: bold;");
@@ -197,33 +185,26 @@ public class TrigoFunController implements Initializable {
             if (gameService != null && currentGameSession != null) {
                 try {
                     gameService.submitCorrect(currentGameSession);
-                    System.out.println("Saved correct answer to database. Session ID: " + currentGameSession.getId() + ", Consecutive correct: " + currentConsecutiveCorrect);
+                    System.out.println("Saved correct answer to database. Session ID: " + currentGameSession.getId() + ", Consecutive correct: " + currentStrikes);
                 } catch (Exception e) {
                     System.err.println("Failed to save correct answer: " + e.getMessage());
                 }
             }
         } else {
-            if (currentConsecutiveCorrect > highestConsecutiveCorrect) {
-                highestConsecutiveCorrect = currentConsecutiveCorrect;
+            if (currentStrikes > highestStrikes) {
+                highestStrikes = currentStrikes;
             }
-            currentConsecutiveCorrect = 0;
-            wrongStrikes++; // Increment wrong strikes
-            feedbackLabel.setText("Wrong! Correct answer: " + currentQuestion.getAnswer() + " (Strikes: " + wrongStrikes + "/3)");
+            currentStrikes = 0;
+            feedbackLabel.setText("Wrong! Correct answer: " + currentQuestion.getAnswer());
             feedbackLabel.setStyle("-fx-text-fill: red; -fx-font-size: 18px; -fx-font-weight: bold;");
 
             if (gameService != null && currentGameSession != null) {
                 try {
                     gameService.submitWrong(currentGameSession);
-                    System.out.println("Saved wrong answer to database. Session ID: " + currentGameSession.getId() + ", Wrong strikes: " + wrongStrikes);
+                    System.out.println("Saved wrong answer to database. Session ID: " + currentGameSession.getId() + ", Consecutive correct reset to: " + currentStrikes);
                 } catch (Exception e) {
                     System.err.println("Failed to save wrong answer: " + e.getMessage());
                 }
-            }
-
-            // Check if 3 strikes reached
-            if (wrongStrikes >= 3) {
-                endGame("Game Over - 3 Strikes! Final Score: " + totalScore + "/" + currentQuestionIndex);
-                return;
             }
         }
 
@@ -334,7 +315,7 @@ public class TrigoFunController implements Initializable {
             try {
                 gameService.finishRound(currentGameSession);
                 System.out.println("Finished game session in database. Session ID: " + currentGameSession.getId() +
-                        ", Final Score: " + totalScore + ", Highest Consecutive Correct: " + highestConsecutiveCorrect);
+                        ", Final Score: " + totalScore + ", Total Strikes: " + highestStrikes);
             } catch (Exception e) {
                 System.err.println("Failed to finish game session: " + e.getMessage());
             }
@@ -345,50 +326,17 @@ public class TrigoFunController implements Initializable {
             gameTimer.stop();
         }
 
-        // Disable input and show New Game button
+        // Disable input
         answerField.setDisable(true);
-        newGameButton.setVisible(true);
 
         // Show final message
         feedbackLabel.setText(message);
         feedbackLabel.setStyle("-fx-text-fill: blue; -fx-font-size: 20px; -fx-font-weight: bold;");
 
         // Hide question and image
-        questionLabel.setText("Game Over! Click 'New Game' to play again.");
+        questionLabel.setText("Game Over!");
         questionImage.setImage(null);
 
         System.out.println("Game ended: " + message);
-    }
-
-    @FXML
-    public void handleNewGame(ActionEvent actionEvent) {
-        // Reset all game state variables
-        currentQuestionIndex = 0;
-        totalScore = 0;
-        wrongStrikes = 0;
-        highestConsecutiveCorrect = 0;
-        currentConsecutiveCorrect = 0;
-        timeRemaining = 300;
-        gameActive = true;
-
-        // Reset UI elements
-        answerField.setDisable(false);
-        answerField.clear();
-        newGameButton.setVisible(false);
-        updateScoreDisplay();
-        feedbackLabel.setText("");
-        feedbackLabel.setStyle("");
-
-        // Start new game session in database
-        startGameSession();
-
-        // Reload and shuffle questions
-        initializeQuestionsFromBank();
-
-        // Start the first question and timer
-        displayCurrentQuestion();
-        startGameTimer();
-
-        System.out.println("New game started!");
     }
 }
