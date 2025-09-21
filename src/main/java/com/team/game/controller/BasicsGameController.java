@@ -1,7 +1,6 @@
 package main.java.com.team.game.controller;
 
 import main.java.com.team.game.model.Question;
-import main.java.com.team.game.model.QuestionBank;
 import main.java.com.team.game.model.GameMode;
 import main.java.com.team.game.model.GameSession;
 import main.java.com.team.game.model.User;
@@ -12,15 +11,16 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -38,65 +38,69 @@ public class BasicsGameController implements Initializable {
     private Label feedbackLabel;
 
     @FXML
-    private VBox optionsContainer;
+    private Button optionAButton;
 
     @FXML
-    private HBox inputContainer;
+    private Button optionBButton;
 
     @FXML
-    private Button option1Button;
+    private Button optionCButton;
 
     @FXML
-    private Button option2Button;
+    private Button optionDButton;
 
     @FXML
-    private Button option3Button;
+    private TextField numericAnswerField;
 
     @FXML
-    private Button option4Button;
+    private Button submitNumericButton;
 
     @FXML
-    private TextField answerField;
+    private ProgressBar progressBar;
 
-    // Game state variables
-    private List<Question> gameQuestions;
-    private QuestionBank questionBank;
+    @FXML
+    private Button nextButton;
+
+    // Game service and user
     private GameService gameService;
     private User currentUser;
     private GameSession currentGameSession;
+
+    // Game state variables
+    private List<Question> gameQuestions;
     private int currentQuestionIndex = 0;
     private int score = 0;
     private int strikes = 0;
     private Question currentQuestion;
     private boolean gameActive = true;
 
+    // Timer
+    private Timeline questionTimer;
+    private final int QUESTION_TIME = 30;
+    private int timeRemaining = QUESTION_TIME;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Get the logged-in user and GameService from Main
         initializeFromLogin();
-
-        // Initialize questions from QuestionBank
-        initializeQuestionsFromBank();
-
-        // Start a new game session in the database
         startGameSession();
-
-        // Display the first question
+        initializeQuestions();
         displayCurrentQuestion();
+        setupButtonActions();
+    }
+
+    // Method for testing or dependency injection
+    public void setDependencies(GameService service, User user) {
+        this.gameService = service;
+        this.currentUser = user;
     }
 
     private void initializeFromLogin() {
-        gameService = Main.BasicsApp.getGameService();
-        currentUser = Main.BasicsApp.getCurrentUser();
-
-        if (currentUser != null) {
-            System.out.println("Using logged-in user: " + currentUser.getUsername());
-        } else {
-            System.err.println("No user logged in! This should not happen.");
-        }
-
-        if (gameService == null) {
-            System.err.println("GameService not available! This should not happen.");
+        try {
+            this.gameService = Main.BasicsApp.getGameService();
+            // This line was causing the error - we need to add getCurrentUser() to BasicsApp
+            this.currentUser = Main.BasicsApp.getCurrentUser();
+        } catch (Exception e) {
+            System.err.println("Error initializing from login: " + e.getMessage());
         }
     }
 
@@ -104,19 +108,59 @@ public class BasicsGameController implements Initializable {
         if (gameService != null && currentUser != null) {
             try {
                 currentGameSession = gameService.startRound(currentUser, GameMode.BASICS);
-                System.out.println("Started new game session with ID: " + currentGameSession.getId());
+                System.out.println("Started new basics game session with ID: " + currentGameSession.getId());
             } catch (Exception e) {
                 System.err.println("Failed to start game session: " + e.getMessage());
-                e.printStackTrace();
             }
         }
     }
 
-    private void initializeQuestionsFromBank() {
-        questionBank = new QuestionBank();
-        gameQuestions = new ArrayList<>();
-        gameQuestions.addAll(questionBank.getBasics());
-        System.out.println("Loaded " + gameQuestions.size() + " questions from QuestionBank");
+    private void initializeQuestions() {
+        if (gameService != null) {
+            gameQuestions = new ArrayList<>(gameService.getBasicsQuestions());
+        } else {
+            gameQuestions = new ArrayList<>();
+            gameQuestions.add(new Question(
+                    "u = 20 m/s, t = 12s, a = 10 m/s². Which formula gives v?",
+                    "v = u + at",
+                    Arrays.asList("v = u + at", "s = ut + 1/2 at²", "v² = u² + 2as", "s = 1/2 (u+v)t")
+            ));
+            gameQuestions.add(new Question(
+                    "Which formula represents displacement with initial velocity?",
+                    "s = ut + 1/2 at²",
+                    Arrays.asList("s = ut + 1/2 at²", "v = u + at", "F = ma", "E = mc²")
+            ));
+            gameQuestions.add(new Question(
+                    "Which of these equations is derived from Newton's second law?",
+                    "F = ma",
+                    Arrays.asList("F = ma", "v = u + at", "s = ut + 1/2 at²", "p = mv")
+            ));
+            gameQuestions.add(new Question(
+                    "Which formula relates velocity squared to displacement?",
+                    "v² = u² + 2as",
+                    Arrays.asList("v² = u² + 2as", "s = ut + 1/2 at²", "p = mv", "v = u + at")
+            ));
+            gameQuestions.add(new Question(
+                    "u = 15 m/s, v = 35 m/s, t = 4s. What is a?",
+                    "5"
+            ));
+            gameQuestions.add(new Question(
+                    "A car accelerates from rest at 2 m/s² for 6s. Find v.",
+                    "12"
+            ));
+        }
+
+        Collections.shuffle(gameQuestions);
+        System.out.println("Loaded " + gameQuestions.size() + " questions for basics game");
+    }
+
+    private void setupButtonActions() {
+        optionAButton.setOnAction(this::handleMultipleChoiceAnswer);
+        optionBButton.setOnAction(this::handleMultipleChoiceAnswer);
+        optionCButton.setOnAction(this::handleMultipleChoiceAnswer);
+        optionDButton.setOnAction(this::handleMultipleChoiceAnswer);
+        submitNumericButton.setOnAction(this::handleNumericAnswer);
+        nextButton.setOnAction(this::handleNextQuestion);
     }
 
     private void displayCurrentQuestion() {
@@ -124,61 +168,174 @@ public class BasicsGameController implements Initializable {
             currentQuestion = gameQuestions.get(currentQuestionIndex);
             questionLabel.setText("Question " + (currentQuestionIndex + 1) + ": " + currentQuestion.getText());
 
-            // Show appropriate input method based on question type
-            if (currentQuestion.getOptions() != null && !currentQuestion.getOptions().isEmpty()) {
-                // Multiple choice question
-                optionsContainer.setVisible(true);
-                inputContainer.setVisible(false);
+            if (currentQuestion.getOptions() != null && currentQuestion.getOptions().size() >= 4) {
+                optionAButton.setVisible(true);
+                optionBButton.setVisible(true);
+                optionCButton.setVisible(true);
+                optionDButton.setVisible(true);
+                numericAnswerField.setVisible(false);
+                submitNumericButton.setVisible(false);
 
-                // Set option text
                 List<String> options = currentQuestion.getOptions();
-                option1Button.setText(options.get(0));
-                option2Button.setText(options.get(1));
-                option3Button.setText(options.get(2));
-                option4Button.setText(options.get(3));
+                optionAButton.setText("A: " + options.get(0));
+                optionBButton.setText("B: " + options.get(1));
+                optionCButton.setText("C: " + options.get(2));
+                optionDButton.setText("D: " + options.get(3));
             } else {
-                // Direct answer question
-                optionsContainer.setVisible(false);
-                inputContainer.setVisible(true);
-                answerField.clear();
+                optionAButton.setVisible(false);
+                optionBButton.setVisible(false);
+                optionCButton.setVisible(false);
+                optionDButton.setVisible(false);
+                numericAnswerField.setVisible(true);
+                submitNumericButton.setVisible(true);
+                numericAnswerField.clear();
             }
+
+            resetOptionButtons();
+            nextButton.setDisable(true);
+            startQuestionTimer();
         } else {
-            endGame("Game Finished! Final Score: " + score + "/" + gameQuestions.size());
+            endGame("Game Completed! Final Score: " + score + "/" + gameQuestions.size());
+        }
+    }
+
+    private void startQuestionTimer() {
+        timeRemaining = QUESTION_TIME;
+        updateProgressBar();
+
+        if (questionTimer != null) {
+            questionTimer.stop();
+        }
+
+        questionTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            timeRemaining--;
+            updateProgressBar();
+
+            if (timeRemaining <= 0) {
+                handleTimeUp();
+            }
+        }));
+
+        questionTimer.setCycleCount(Timeline.INDEFINITE);
+        questionTimer.play();
+    }
+
+    private void updateProgressBar() {
+        double progress = (double) timeRemaining / QUESTION_TIME;
+        progressBar.setProgress(progress);
+
+        if (timeRemaining <= 10) {
+            progressBar.setStyle("-fx-accent: red;");
+        } else if (timeRemaining <= 20) {
+            progressBar.setStyle("-fx-accent: orange;");
+        } else {
+            progressBar.setStyle("-fx-accent: green;");
+        }
+    }
+
+    private void handleTimeUp() {
+        questionTimer.stop();
+        feedbackLabel.setText("Time's up! The correct answer was: " + currentQuestion.getAnswer());
+        feedbackLabel.setStyle("-fx-text-fill: red; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+        strikes++;
+        updateStrikesDisplay();
+
+        if (gameService != null && currentGameSession != null) {
+            try {
+                gameService.submitWrong(currentGameSession);
+            } catch (Exception e) {
+                System.err.println("Failed to save wrong answer: " + e.getMessage());
+            }
+        }
+
+        highlightCorrectAnswer();
+        nextButton.setDisable(false);
+
+        if (strikes >= 3) {
+            endGame("Game Over - 3 Strikes!");
         }
     }
 
     @FXML
-    public void handleOptionSelect(ActionEvent event) {
+    private void handleMultipleChoiceAnswer(ActionEvent event) {
         if (!gameActive) return;
 
+        questionTimer.stop();
         Button selectedButton = (Button) event.getSource();
-        String selectedAnswer = selectedButton.getText();
-        checkAnswer(selectedAnswer);
+        String selectedAnswer = extractAnswerFromButton(selectedButton.getText());
+
+        // Fixed: For multiple choice questions, we know it's always multiple choice
+        boolean isCorrect = isAnswerCorrect(selectedAnswer, currentQuestion.getAnswer(), true);
+
+        processAnswer(isCorrect);
+
+        if (isCorrect) {
+            selectedButton.setStyle("-fx-background-color: #90EE90; -fx-border-color: #006400;");
+        } else {
+            selectedButton.setStyle("-fx-background-color: #FFCCCB; -fx-border-color: #8B0000;");
+            highlightCorrectAnswer();
+        }
+
+        nextButton.setDisable(false);
     }
 
     @FXML
-    public void handleSubmitAnswer(ActionEvent event) {
+    private void handleNumericAnswer(ActionEvent event) {
         if (!gameActive) return;
 
-        String userAnswer = answerField.getText().trim();
+        questionTimer.stop();
+        String userAnswer = numericAnswerField.getText().trim();
+
         if (userAnswer.isEmpty()) {
             feedbackLabel.setText("Please enter an answer!");
-            feedbackLabel.setStyle("-fx-text-fill: orange;");
+            feedbackLabel.setStyle("-fx-text-fill: orange; -fx-font-size: 16px; -fx-font-weight: bold;");
             return;
         }
 
-        checkAnswer(userAnswer);
+        // Fixed: For numeric questions, we know it's always numeric (not multiple choice)
+        boolean isCorrect = isAnswerCorrect(userAnswer, currentQuestion.getAnswer(), false);
+        processAnswer(isCorrect);
+
+        if (!isCorrect) {
+            feedbackLabel.setText("Incorrect! The correct answer was: " + currentQuestion.getAnswer());
+            feedbackLabel.setStyle("-fx-text-fill: red; -fx-font-size: 16px; -fx-font-weight: bold;");
+        }
+
+        nextButton.setDisable(false);
     }
 
-    private void checkAnswer(String userAnswer) {
-        boolean isCorrect = isAnswerCorrect(userAnswer, currentQuestion.getAnswer());
+    // Method to check if an answer is correct
+    public boolean isAnswerCorrect(String userAnswer, String correctAnswer, boolean isMultipleChoice) {
+        if (isMultipleChoice) {
+            return normalizeAnswer(userAnswer, true).equals(normalizeAnswer(correctAnswer, true));
+        } else {
+            try {
+                double userValue = Double.parseDouble(userAnswer.trim());
+                double correctValue = Double.parseDouble(correctAnswer.trim());
+                return Math.abs(userValue - correctValue) < 0.01;
+            } catch (NumberFormatException e) {
+                return userAnswer.trim().equalsIgnoreCase(correctAnswer.trim());
+            }
+        }
+    }
 
+    // Method to normalize answers for flexible matching
+    private String normalizeAnswer(String answer, boolean isMultipleChoice) {
+        if (isMultipleChoice) {
+            return answer.toLowerCase().replaceAll("\\s+", "");
+        } else {
+            return answer.trim();
+        }
+    }
+
+    private void processAnswer(boolean isCorrect) {
         if (isCorrect) {
             score++;
+            updateScoreDisplay();
             feedbackLabel.setText("Correct!");
-            feedbackLabel.setStyle("-fx-text-fill: green;");
+            feedbackLabel.setStyle("-fx-text-fill: green; -fx-font-size: 16px; -fx-font-weight: bold;");
 
-            // Save correct answer to database
             if (gameService != null && currentGameSession != null) {
                 try {
                     gameService.submitCorrect(currentGameSession);
@@ -188,10 +345,10 @@ public class BasicsGameController implements Initializable {
             }
         } else {
             strikes++;
-            feedbackLabel.setText("Wrong! The correct answer is: " + currentQuestion.getAnswer());
-            feedbackLabel.setStyle("-fx-text-fill: red;");
+            updateStrikesDisplay();
+            feedbackLabel.setText("Incorrect! The correct answer was: " + currentQuestion.getAnswer());
+            feedbackLabel.setStyle("-fx-text-fill: red; -fx-font-size: 16px; -fx-font-weight: bold;");
 
-            // Save wrong answer to database
             if (gameService != null && currentGameSession != null) {
                 try {
                     gameService.submitWrong(currentGameSession);
@@ -200,68 +357,83 @@ public class BasicsGameController implements Initializable {
                 }
             }
 
-            // Check if game should end due to strikes
             if (strikes >= 3) {
-                endGame("Game Over! You reached 3 strikes. Final Score: " + score + "/" + gameQuestions.size());
-                return;
+                endGame("Game Over - 3 Strikes!");
             }
         }
-
-        // Update UI
-        updateScoreDisplay();
-
-        // Move to next question after a short delay
-        currentQuestionIndex++;
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(2), e -> {
-                    if (gameActive) {
-                        displayCurrentQuestion();
-                        feedbackLabel.setText("");
-                    }
-                })
-        );
-        timeline.play();
     }
 
-    private boolean isAnswerCorrect(String userAnswer, String correctAnswer) {
-        // Normalize answers for comparison
-        String normalizedUserAnswer = userAnswer.toLowerCase().replaceAll("\\s+", "");
-        String normalizedCorrectAnswer = correctAnswer.toLowerCase().replaceAll("\\s+", "");
+    private String extractAnswerFromButton(String buttonText) {
+        return buttonText.substring(3);
+    }
 
-        return normalizedUserAnswer.equals(normalizedCorrectAnswer);
+    private void highlightCorrectAnswer() {
+        if (currentQuestion.getOptions() != null) {
+            List<String> options = currentQuestion.getOptions();
+            String correctAnswer = currentQuestion.getAnswer();
+
+            if (options.get(0).equals(correctAnswer)) {
+                optionAButton.setStyle("-fx-background-color: #90EE90; -fx-border-color: #006400;");
+            } else if (options.get(1).equals(correctAnswer)) {
+                optionBButton.setStyle("-fx-background-color: #90EE90; -fx-border-color: #006400;");
+            } else if (options.get(2).equals(correctAnswer)) {
+                optionCButton.setStyle("-fx-background-color: #90EE90; -fx-border-color: #006400;");
+            } else if (options.get(3).equals(correctAnswer)) {
+                optionDButton.setStyle("-fx-background-color: #90EE90; -fx-border-color: #006400;");
+            }
+        }
+    }
+
+    private void resetOptionButtons() {
+        String defaultStyle = "";
+        optionAButton.setStyle(defaultStyle);
+        optionBButton.setStyle(defaultStyle);
+        optionCButton.setStyle(defaultStyle);
+        optionDButton.setStyle(defaultStyle);
+    }
+
+    @FXML
+    private void handleNextQuestion(ActionEvent event) {
+        currentQuestionIndex++;
+        feedbackLabel.setText("");
+        displayCurrentQuestion();
     }
 
     private void updateScoreDisplay() {
         scoreLabel.setText("Score: " + score);
+    }
+
+    private void updateStrikesDisplay() {
         strikesLabel.setText("Strikes: " + strikes + "/3");
     }
 
     private void endGame(String message) {
         gameActive = false;
 
-        // Finish the game session in the database
         if (gameService != null && currentGameSession != null) {
             try {
                 gameService.finishRound(currentGameSession);
-                System.out.println("Finished game session. Final Score: " + score);
             } catch (Exception e) {
                 System.err.println("Failed to finish game session: " + e.getMessage());
             }
         }
 
-        // Show final message
+        if (questionTimer != null) {
+            questionTimer.stop();
+        }
+
+        optionAButton.setDisable(true);
+        optionBButton.setDisable(true);
+        optionCButton.setDisable(true);
+        optionDButton.setDisable(true);
+        submitNumericButton.setDisable(true);
+        nextButton.setDisable(true);
+
         feedbackLabel.setText(message);
-        feedbackLabel.setStyle("-fx-text-fill: blue; -fx-font-size: 20px;");
+        feedbackLabel.setStyle("-fx-text-fill: blue; -fx-font-size: 18px; -fx-font-weight: bold;");
 
-        // Disable inputs
-        optionsContainer.setVisible(false);
-        inputContainer.setVisible(false);
-        questionLabel.setText("Game Over!");
-    }
+        questionLabel.setText("Game Over! Final Score: " + score + "/" + gameQuestions.size());
 
-    // Test helper method to set dependencies
-    public void setDependencies(GameService gameService, User user) {
-        this.gameService = gameService;
-        this.currentUser = user;
+        System.out.println("Basics game ended: " + message);
     }
 }
