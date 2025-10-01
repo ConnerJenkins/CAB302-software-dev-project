@@ -3,9 +3,9 @@ package main.java.com.team.game.model;
 import java.util.*;
 
 public class QuestionBank {
-    private List<Question> basicsQuestions;
-    private List<Question> trigoQuestions;
-    private List<Question> targetQuestions;
+    private final List<Question> basicsQuestions;
+    private final List<Question> trigoQuestions;
+    private final List<Question> targetQuestions;
 
     public QuestionBank() {
         basicsQuestions = generateBasics();
