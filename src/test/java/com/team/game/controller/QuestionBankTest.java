@@ -1,9 +1,14 @@
 package test.java.com.team.game.controller;
+
 import main.java.com.team.game.model.Question;
 import main.java.com.team.game.model.QuestionBank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class QuestionBankTest {
@@ -29,20 +34,73 @@ public class QuestionBankTest {
     }
 
     @Test
-    void targetQuestionsShouldNotBeEmpty() {
-        List<Question> target = questionBank.getTarget();
-        assertNotNull(target, "Target questions list should not be null");
-        assertFalse(target.isEmpty(), "Target questions list should not be empty");
+    void basicsShouldContainExpectedNumberOfQuestions() {
+        List<Question> basics = questionBank.getBasics();
+        assertEquals(10, basics.size(),
+                "Expected 10 basic questions but found only " + basics.size());
     }
 
     @Test
-    void eachBasicQuestionShouldHaveValidTextAndAnswer() {
-        for (Question q : questionBank.getBasics()) {
-            assertNotNull(q.getText(), "Question text should not be null");
-            assertFalse(q.getText().isBlank(), "Question text should not be blank");
+    void allQuestionsShouldHaveValidText() {
+        List<Question> basics = questionBank.getBasics();
+        List<Question> trigo = questionBank.getTrigo();
 
-            assertNotNull(q.getAnswer(), "Answer should not be null");
-            assertFalse(q.getAnswer().isBlank(), "Answer should not be blank");
+        for (Question q : basics) {
+            assertNotNull(q.getText(), "Question text should not be null");
+            assertFalse(q.getText().trim().isEmpty(), "Question text should not be empty");
+        }
+
+        for (Question q : trigo) {
+            assertNotNull(q.getText(), "Question text should not be null");
+            assertFalse(q.getText().trim().isEmpty(), "Question text should not be empty");
+        }
+    }
+
+    @Test
+    void questionsShouldHaveAtLeastOneAnswer() {
+        List<Question> basics = questionBank.getBasics();
+        List<Question> trigo = questionBank.getTrigo();
+
+        for (Question q : basics) {
+            assertNotNull(q.getAnswer(), "Answers list should not be null");
+            assertFalse(q.getAnswer().isEmpty(), "Answers list should not be empty");
+        }
+
+        for (Question q : trigo) {
+            assertNotNull(q.getAnswer(), "Answers list should not be null");
+            assertFalse(q.getAnswer().isEmpty(), "Answers list should not be empty");
+        }
+    }
+
+    @Test
+    void questionsShouldBeUniqueInEachBank() {
+        List<Question> basics = questionBank.getBasics();
+        List<Question> trigo = questionBank.getTrigo();
+
+        Set<String> basicQuestionsText = new HashSet<>();
+        for (Question q : basics) {
+            assertTrue(basicQuestionsText.add(q.getText()), "Duplicate question found in basics");
+        }
+
+        Set<String> trigoQuestionsText = new HashSet<>();
+        for (Question q : trigo) {
+            assertTrue(trigoQuestionsText.add(q.getText()), "Duplicate question found in trigo");
+        }
+    }
+
+    @Test
+    void basicsAndTrigoShouldNotOverlap() {
+        List<Question> basics = questionBank.getBasics();
+        List<Question> trigo = questionBank.getTrigo();
+
+        Set<String> basicsText = new HashSet<>();
+        for (Question q : basics) {
+            basicsText.add(q.getText());
+        }
+
+        for (Question q : trigo) {
+            assertFalse(basicsText.contains(q.getText()),
+                    "Question appears in both basics and trigo: " + q.getText());
         }
     }
 }

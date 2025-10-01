@@ -13,6 +13,7 @@ public class QuestionBank {
         targetQuestions = generateTarget();
     }
 
+    // Questions for Basic Category
     private List<Question> generateBasics() {
         List<Question> q = new ArrayList<>();
 
@@ -92,6 +93,7 @@ public class QuestionBank {
         return q;
     }
 
+    //Questions for Trigo Category
     private List<Question> generateTrigo() {
         List<Question> q = new ArrayList<>();
         q.add(new Question("Simplify: tan 45° + cos 60°",
@@ -123,6 +125,7 @@ public class QuestionBank {
         return q;
     }
 
+    //Questions for Target Category
     private List<Question> generateTarget() {
         List<Question> q = new ArrayList<>();
         q.add(new Question("A projectile is fired with u = 20 m/s at 30°. Find horizontal component of velocity.",
@@ -155,6 +158,7 @@ public class QuestionBank {
         return q;
     }
 
+    // Getter mthods to help obtain question
     public List<Question> getBasics() {
         return basicsQuestions;
     }
