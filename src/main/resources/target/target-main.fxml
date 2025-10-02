@@ -15,7 +15,7 @@
             fx:controller="main.java.com.team.game.controller.TargetGameController">
     <children>
         <VBox spacing="10" AnchorPane.topAnchor="12" AnchorPane.leftAnchor="12" AnchorPane.rightAnchor="12" AnchorPane.bottomAnchor="12">
-            <Label text="Target Game" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Label text="Target Game" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #2E86DE; -fx-font-family: 'Arial';" alignment="CENTER" maxWidth="Infinity" />
             <HBox spacing="20">
                 <Label fx:id="scoreLabel" text="Score: 0"/>
                 <Label fx:id="strikesLabel" text="Strikes: 0 / 3"/>

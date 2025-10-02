@@ -16,6 +16,9 @@ import main.java.com.team.game.model.User;
 import main.java.com.team.game.service.GameService;
 import main.java.com.team.game.target.TargetPhysics;
 
+import javafx.application.Platform;
+import javafx.scene.input.KeyCode;
+
 import java.util.Random;
 
 public class TargetGameController {
@@ -36,6 +39,9 @@ public class TargetGameController {
     private GameSession session;
 
     private final Random rng = new Random();
+
+    //
+
     private int score = 0;
     private int strikes = 0;
 
@@ -44,7 +50,7 @@ public class TargetGameController {
 
     private final double ppm = 50.0;
     private final double g = 9.8;
-    private final double wallX_px = 700.0;
+    private double wallX_px;
     private final double groundMargin = 40.0;
     private final double ballRadius_px = 8.0;
     private final double targetRadius_px = 14.0;
@@ -65,6 +71,8 @@ public class TargetGameController {
     private double t;
     private double vUser;
 
+    //
+
     @FXML
     private void initialize() {
         try {
@@ -84,7 +92,22 @@ public class TargetGameController {
 
         updateHud();
         newRound();
+
+
+        Platform.runLater(() -> {
+            canvas.getScene().setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ENTER) {
+                    if (fireBtn.isVisible() && !fireBtn.isDisabled()) {
+                        fireBtn.fire();
+                    } else if (nextBtn.isVisible() && !nextBtn.isDisabled()) {
+                        nextBtn.fire();
+                    }
+                }
+            });
+        });
     }
+
+    //
 
     @FXML
     private void handleFire() {
@@ -161,6 +184,11 @@ public class TargetGameController {
             endGame("3 strikes reached.");
             return;
         }
+
+        wallX_px = 500.0 + rng.nextDouble() * 300.0;
+
+
+        //
 
         angleDeg = ANGLE_MIN_DEG + rng.nextDouble() * (ANGLE_MAX_DEG - ANGLE_MIN_DEG);
         angleRad = Math.toRadians(angleDeg);
@@ -259,6 +287,8 @@ public class TargetGameController {
         statusLabel.setText(finalMsg);
     }
 
+    //
+
     private void startAnimation() {
         animating = true;
         t = 0.0;
@@ -304,6 +334,7 @@ public class TargetGameController {
             endRound(false);
             return;
         }
+        //
 
         if (x_px + ballRadius_px >= wallX_px) {
             double targetCenterY_px = groundY_px - (targetY_m * ppm);
@@ -355,4 +386,32 @@ public class TargetGameController {
         scoreLabel.setText("Score: " + score);
         strikesLabel.setText("Strikes: " + strikes + " / 3");
     }
+
+
+
+
+    void setTestDependencies(GameService svc, User user) {
+        this.gameService = svc;
+        this.currentUser = user;
+    }
+
+    void setTestUI(Label score, Label strikes, Label status, Label question,
+                   TextField answer, Button fire, Button next, Button newGame,
+                   Button ret, Canvas canv) {
+        this.scoreLabel = score;
+        this.strikesLabel = strikes;
+        this.statusLabel = status;
+        this.questionLabel = question;
+        this.answerField = answer;
+        this.fireBtn = fire;
+        this.nextBtn = next;
+        this.newGameBtn = newGame;
+        this.returnBtn = ret;
+        this.canvas = canv;
+    }
+
+    // Expose methods for tests
+    void testHandleFire() { handleFire(); }
+    void testHandleNext() { handleNext(); }
+    void testHandleNewGame() { handleNewGame(); }
 }
