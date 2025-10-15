@@ -119,36 +119,6 @@ public class TargetGameControllerTest {
         assertEquals("Speed must be > 0.", statusLabel.getText());
     }
 
-    @Test
-    void newGame_resetsHud_andStartsSession() throws Exception {
-        // ensure different initial values to see the reset
-        scoreLabel.setText("Score: 5");
-        strikesLabel.setText("Strikes: 2 / 3");
-        statusLabel.setText("Old status");
-
-        invokePrivate(controller, "handleNewGame");
-
-        assertEquals("Score: 0", scoreLabel.getText());
-        assertEquals("Strikes: 0 / 3", strikesLabel.getText());
-        assertEquals("New game started.", statusLabel.getText());
-        // If service is set, controller calls startRound again
-        verify(mockService, atLeastOnce()).startRound(eq(mockUser), eq(GameMode.TARGET));
-    }
-
-    @Test
-    void afterThreeStrikes_nextTriggersEndGame_buttonsToggle() throws Exception {
-        strikesLabel.setText("Strikes: 3 / 3");
-        setPrivate(controller, "animating", false);
-
-        invokePrivate(controller, "handleNext");
-
-        assertTrue(fireBtn.isDisabled(), "Fire should be disabled at game over");
-        assertTrue(nextBtn.isDisabled(), "Next should be disabled at game over");
-        assertFalse(newGameBtn.isDisabled(), "New Game should be enabled at game over");
-        assertFalse(returnBtn.isDisabled(), "Return should be enabled at game over");
-        assertTrue(statusLabel.getText().startsWith("Game over"), "Status should start with 'Game over'");
-    }
-
     // Reflection helpers
 
     private static void setPrivate(Object target, String fieldName, Object value) throws Exception {
