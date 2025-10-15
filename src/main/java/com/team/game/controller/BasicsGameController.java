@@ -306,26 +306,62 @@ public class BasicsGameController implements Initializable {
     }
 
     // Method to check if an answer is correct
-    public boolean isAnswerCorrect(String userAnswer, String correctAnswer, boolean isMultipleChoice) {
+    public boolean isAnswerCorrect(String userInput, String correctAnswer, boolean isMultipleChoice) {
+        String uNorm = normalizeAnswer(userInput, isMultipleChoice);
+        String cNorm = normalizeAnswer(correctAnswer, isMultipleChoice);
+
         if (isMultipleChoice) {
-            return normalizeAnswer(userAnswer, true).equals(normalizeAnswer(correctAnswer, true));
+            return uNorm.equals(cNorm);
         } else {
-            try {
-                double userValue = Double.parseDouble(userAnswer.trim());
-                double correctValue = Double.parseDouble(correctAnswer.trim());
-                return Math.abs(userValue - correctValue) < 0.01;
-            } catch (NumberFormatException e) {
-                return userAnswer.trim().equalsIgnoreCase(correctAnswer.trim());
+            // decimal or fraction with tolerance
+            Double u = parseNumber(uNorm);
+            Double c = parseNumber(cNorm);
+            if (u != null && c != null) {
+                // +/- 0.01 tolerance
+                return Math.abs(u - c) <= 1e-2;
             }
+            return uNorm.equals(cNorm);
         }
     }
 
     // Method to normalize answers for flexible matching
     private String normalizeAnswer(String answer, boolean isMultipleChoice) {
+        if (answer == null) {
+            return "";
+        }
+        answer = answer.trim();
+
         if (isMultipleChoice) {
             return answer.toLowerCase().replaceAll("\\s+", "");
         } else {
-            return answer.trim();
+            return answer.replaceAll("\\answer*/\\answer*", "/").trim();
+        }
+    }
+
+    private Double parseNumber(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+
+        if (s.matches("-?\\d+(?:\\.\\d+)?/\\s*-?\\d+(?:\\.\\d+)?")) {
+            String[] ab = s.split("/");
+            try {
+                double a = Double.parseDouble(ab[0].trim());
+                double b = Double.parseDouble(ab[1].trim());
+                if (b == 0.0) {
+                    return null;
+                }
+                return a / b;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        // decimal
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 
