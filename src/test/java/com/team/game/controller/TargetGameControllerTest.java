@@ -21,11 +21,15 @@ import java.time.Instant;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for {@link TargetGameController}.
+ * Uses lightweight JavaFX controls injected via reflection to validate input handling and state.
+ */
 public class TargetGameControllerTest {
 
     private TargetGameController controller;
 
-    // fake ui controls we’ll inject with reflection
+    // Fake UI controls injected reflectively into the controller
     private Label scoreLabel;
     private Label strikesLabel;
     private Label statusLabel;
@@ -41,6 +45,10 @@ public class TargetGameControllerTest {
     private GameSession mockSession;
     private User mockUser;
 
+    /**
+     * Ensures JavaFX platform is started once for tests that touch controls.
+     * Ignores the error if already initialized.
+     */
     @BeforeAll
     static void initJavaFx() {
         try {
@@ -49,6 +57,10 @@ public class TargetGameControllerTest {
         }
     }
 
+    /**
+     * Creates a fresh controller, injects stubbed controls and state,
+     * and wires a mocked {@link GameService} before each test.
+     */
     @BeforeEach
     void setUp() throws Exception {
         controller = new TargetGameController();
@@ -98,6 +110,7 @@ public class TargetGameControllerTest {
 
     // TESTS
 
+    /** When no speed is provided, the controller should prompt for input. */
     @Test
     void fire_withEmptyInput_showsPrompt() throws Exception {
         answerField.setText("");
@@ -105,6 +118,7 @@ public class TargetGameControllerTest {
         assertEquals("Enter a launch speed first.", statusLabel.getText());
     }
 
+    /** Non-numeric speed should trigger a validation message. */
     @Test
     void fire_withNonNumeric_showsValidation() throws Exception {
         answerField.setText("abc");
@@ -112,6 +126,7 @@ public class TargetGameControllerTest {
         assertEquals("Please enter a valid number (m/s).", statusLabel.getText());
     }
 
+    /** Negative speed should be rejected with a clear error. */
     @Test
     void fire_withNegative_showsValidation() throws Exception {
         answerField.setText("-3.2");
@@ -121,24 +136,52 @@ public class TargetGameControllerTest {
 
     // Reflection helpers
 
+    /**
+     * Sets a private field on the target object.
+     *
+     * @param target    instance containing the field
+     * @param fieldName private field name
+     * @param value     value to assign
+     */
     private static void setPrivate(Object target, String fieldName, Object value) throws Exception {
         Field f = getField(target.getClass(), fieldName);
         f.setAccessible(true);
         f.set(target, value);
     }
 
+    /**
+     * Reads a private field from the target object.
+     *
+     * @param target    instance containing the field
+     * @param fieldName private field name
+     * @return field value
+     */
     private static Object getPrivate(Object target, String fieldName) throws Exception {
         Field f = getField(target.getClass(), fieldName);
         f.setAccessible(true);
         return f.get(target);
     }
 
+    /**
+     * Invokes a private zero-arg method on the target object.
+     *
+     * @param target     instance containing the method
+     * @param methodName private method name
+     */
     private static void invokePrivate(Object target, String methodName, Class<?>... paramTypes) throws Exception {
         Method m = getMethod(target.getClass(), methodName, paramTypes);
         m.setAccessible(true);
         m.invoke(target);
     }
 
+    /**
+     * Traverses the class hierarchy to find a declared field.
+     *
+     * @param cls  starting class
+     * @param name field name
+     * @return the {@link Field} if found
+     * @throws NoSuchFieldException if not found
+     */
     private static Field getField(Class<?> cls, String name) throws NoSuchFieldException {
         Class<?> c = cls;
         while (c != null) {
@@ -151,6 +194,15 @@ public class TargetGameControllerTest {
         throw new NoSuchFieldException(name);
     }
 
+    /**
+     * Traverses the class hierarchy to find a declared method.
+     *
+     * @param cls        starting class
+     * @param name       method name
+     * @param paramTypes parameter types
+     * @return the {@link Method} if found
+     * @throws NoSuchMethodException if not found
+     */
     private static Method getMethod(Class<?> cls, String name, Class<?>... paramTypes) throws NoSuchMethodException {
         Class<?> c = cls;
         while (c != null) {
