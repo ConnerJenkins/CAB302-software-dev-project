@@ -56,8 +56,6 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <testSourceDirectory>src/test</testSourceDirectory>
 
         <plugins>
             <plugin>
