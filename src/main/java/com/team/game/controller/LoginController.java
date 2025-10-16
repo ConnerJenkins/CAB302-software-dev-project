@@ -27,37 +27,69 @@ public class LoginController {
     private GameService svc;
     private Consumer<User> onSuccess;
 
-    /**
-     * JavaFX lifecycle hook. No initialization logic required at load.
-     */
+    /** JavaFX lifecycle hook. */
     @FXML
     private void initialize() { }
 
     /**
-     * Injects the dependencies required for login handling.
+     * Injects dependencies for authentication logic.
      *
-     * @param svc        the game service used for authentication and registration
-     * @param onSuccess  callback invoked when a user successfully logs in or registers
+     * @param svc        the game service instance
+     * @param onSuccess  callback invoked on successful login
      */
     public void setDependencies(GameService svc, Consumer<User> onSuccess) {
         this.svc = svc;
-        this.onSuccess = onSuccess;
+        this.onSuccess = (onSuccess != null) ? onSuccess : (u -> {});
+    }
+
+    // =====================================================
+    // === TESTABLE CORE LOGIC METHODS =====================
+    // =====================================================
+
+    /**
+     * Checks login credentials and returns an Optional containing the authenticated user.
+     *
+     * @param username the username entered
+     * @param password the password entered
+     * @return Optional<User> if credentials are valid, otherwise Optional.empty()
+     */
+    public Optional<User> checkUser(String username, char[] password) {
+        if (svc == null) throw new IllegalStateException("GameService not set");
+        if (username == null || password == null) return Optional.empty();
+        return svc.login(username.trim(), password);
     }
 
     /**
-     * Handles user login.
-     * <p>
-     * Validates credentials, attempts authentication via {@link GameService#login(String, char[])},
-     * and invokes {@code onSuccess} if successful. Clears the password array after use.
+     * Registers a new user.
+     *
+     * @param username desired username
+     * @param password chosen password
+     * @return the created User
+     * @throws IllegalStateException if username already exists
      */
+    public User registerUser(String username, char[] password) {
+        if (svc == null) throw new IllegalStateException("GameService not set");
+        String u = (username == null) ? "" : username.trim();
+        if (u.isEmpty() || password == null || password.length == 0)
+            throw new IllegalArgumentException("Username and password required");
+        return svc.register(u, password);
+    }
+
+    // =====================================================
+    // === GUI HANDLERS ===================================
+    // =====================================================
+
+    /** Handles login button click. */
     @FXML
     private void handleLogin() {
         String u = safe(usernameField.getText());
         char[] pw = toChars(passwordField.getText());
+
         if (u.isEmpty() || pw.length == 0) {
             feedbackLabel.setText("Enter username and password");
             return;
         }
+
         try {
             Optional<User> user = checkUser(u, pw);
             if (user.isPresent()) {
@@ -71,20 +103,17 @@ public class LoginController {
         }
     }
 
-    /**
-     * Handles user registration.
-     * <p>
-     * Validates input and attempts to create a new account via {@link GameService#register(String, char[])}.
-     * On success, immediately logs the user in and closes the window.
-     */
+    /** Handles register button click. */
     @FXML
     private void handleRegister() {
         String u = safe(usernameField.getText());
         char[] pw = toChars(passwordField.getText());
+
         if (u.isEmpty() || pw.length == 0) {
             feedbackLabel.setText("Enter username and password");
             return;
         }
+
         try {
             User user = registerUser(u, pw);
             onSuccess.accept(user);
@@ -96,44 +125,13 @@ public class LoginController {
         }
     }
 
-    /**
-     * Validates credentials and checks if the user exists.
-     *
-     * @param username the username to verify
-     * @param password the password entered
-     * @return an {@link Optional} containing the authenticated user if valid
-     */
-    public Optional<User> checkUser(String username, char[] password) {
-        return svc.login(username, password);
-    }
-
-    /**
-     * Registers a new user account.
-     *
-     * @param username the desired username
-     * @param password the chosen password
-     * @return a {@link User} object representing the newly registered account
-     * @throws IllegalStateException if the username already exists or is invalid
-     */
-    public User registerUser(String username, char[] password) throws IllegalStateException {
-        return svc.register(username, password);
-    }
-
-    /**
-     * Closes the login window after successful login or registration.
-     */
+    /** Closes the login window. */
     private void closeWindow() {
+        if (usernameField == null) return; // for tests that don’t use GUI
         Stage stage = (Stage) usernameField.getScene().getWindow();
         if (stage != null) stage.close();
     }
 
-    /**
-     * Safely trims a string, returning an empty string if null.
-     */
     private static String safe(String s) { return s == null ? "" : s.trim(); }
-
-    /**
-     * Converts a string to a char array, returning an empty array if null.
-     */
     private static char[] toChars(String s) { return s == null ? new char[0] : s.toCharArray(); }
 }

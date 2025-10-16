@@ -1,3 +1,4 @@
+
 package test.java.com.team.game.controller;
 
 import main.java.com.team.game.controller.LoginController;
@@ -12,22 +13,11 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for {@link LoginController}.
- * Verifies registration and login behaviour with various credential scenarios.
- */
 public class LoginControllerTest {
 
-    /** Controller under test. */
     private LoginController controller;
-
-    /** Real {@link GameService} backed by in-memory {@link GameStore}. */
     private GameService gameService;
 
-    /**
-     * Sets up a fresh controller and service before each test,
-     * ensuring isolated state and dependency injection.
-     */
     @BeforeEach
     public void setUp() {
         controller = new LoginController();
@@ -35,11 +25,12 @@ public class LoginControllerTest {
         controller.setDependencies(gameService, user -> {});
     }
 
-    /** Ensures a new user can be successfully registered. */
     @Test
     void testRegisterUser_NewUser() {
+
         String username = "testUser123";
         char[] password = "password123".toCharArray();
+
 
         User result = controller.registerUser(username, password);
 
@@ -49,9 +40,9 @@ public class LoginControllerTest {
         assertNotNull(result.getRegisteredAt());
     }
 
-    /** Confirms duplicate usernames trigger an {@link IllegalStateException}. */
     @Test
     void testRegisterUser_DuplicateUsername() {
+
         String username = "duplicateUser";
         char[] password = "password123".toCharArray();
 
@@ -61,9 +52,9 @@ public class LoginControllerTest {
         });
     }
 
-    /** Verifies valid credentials allow a successful login. */
     @Test
     void testCheckUser_ValidCredentials() {
+
         String username = "validUser";
         char[] password = "validPassword".toCharArray();
 
@@ -75,18 +66,17 @@ public class LoginControllerTest {
         assertEquals(username, result.get().getUsername());
     }
 
-    /** Ensures non-existent users cannot log in. */
     @Test
     void testCheckUser_InvalidCredentials() {
         String username = "nonexistentUser";
         char[] password = "wrongPassword".toCharArray();
+
 
         Optional<User> result = controller.checkUser(username, password);
 
         assertFalse(result.isPresent());
     }
 
-    /** Verifies that incorrect passwords prevent login even for existing users. */
     @Test
     void testCheckUser_WrongPassword() {
         String username = "testUser";
@@ -94,6 +84,7 @@ public class LoginControllerTest {
         char[] wrongPassword = "wrongPassword".toCharArray();
 
         controller.registerUser(username, correctPassword);
+
 
         Optional<User> result = controller.checkUser(username, wrongPassword);
         assertFalse(result.isPresent());

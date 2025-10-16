@@ -5,13 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import main.java.com.team.game.target.TargetPhysics;
 
-/**
- * Unit tests for {@link TargetPhysics}.
- * Verifies projectile motion formulas for required speed, hit detection, and error handling.
- */
 public class TargetPhysicsTest {
 
-    /** Ensures the computed speed allows the projectile to hit the target within a tight tolerance. */
     @Test
     void requiredSpeed_whenUsed_hitsTargetWithinTolerance() {
         double g = 9.8;
@@ -26,7 +21,6 @@ public class TargetPhysicsTest {
         assertEquals(y, yAtWall, 1e-6, "Projectile should reach target height at wall");
     }
 
-    /** Verifies that an exception is thrown if the target lies above the projectile’s possible apex. */
     @Test
     void requiredSpeed_throws_ifTargetIsAboveApexLine() {
         double g = 9.8;
@@ -34,11 +28,9 @@ public class TargetPhysicsTest {
         double x = 10.0;
         double yAboveVertexLine = x * Math.tan(angle);
 
-        assertThrows(IllegalArgumentException.class, () ->
-                TargetPhysics.requiredSpeed(g, angle, x, yAboveVertexLine));
+        assertThrows(IllegalArgumentException.class, () -> TargetPhysics.requiredSpeed(g, angle, x, yAboveVertexLine));
     }
 
-    /** Confirms {@link TargetPhysics#isHit(double, double, double)} works correctly for hit radius detection. */
     @Test
     void isHit_true_whenWithinRadius_falseOtherwise() {
         double center = 300.0;
