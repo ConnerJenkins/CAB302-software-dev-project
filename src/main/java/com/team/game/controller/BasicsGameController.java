@@ -365,7 +365,7 @@ public class BasicsGameController implements Initializable {
      * For MCQ, comparison is case/whitespace-insensitive.
      * For numeric answers, allows a small tolerance when parsing as doubles.
      *
-     * @param userAnswer      text entered or option chosen
+     * @param userInput      text entered or option chosen
      * @param correctAnswer   expected answer
      * @param isMultipleChoice true if MCQ, false if numeric
      * @return true if considered correct

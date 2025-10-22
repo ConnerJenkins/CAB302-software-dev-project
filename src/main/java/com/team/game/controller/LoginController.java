@@ -51,8 +51,7 @@ public class LoginController {
      *
      * @param username the username entered
      * @param password the password entered
-     * @return Optional<User> if credentials are valid, otherwise Optional.empty()
-     */
+     * @return {@code Optional<User>} if credentials are valid, otherwise {@code Optional.empty()}     */
     public Optional<User> checkUser(String username, char[] password) {
         if (svc == null) throw new IllegalStateException("GameService not set");
         if (username == null || password == null) return Optional.empty();
