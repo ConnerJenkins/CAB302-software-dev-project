@@ -4,6 +4,7 @@ import main.java.com.team.game.model.GameMode;
 import main.java.com.team.game.model.GameSession;
 import main.java.com.team.game.model.ScoreRow;
 import main.java.com.team.game.model.User;
+import main.java.com.team.game.util.PasswordUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ public final class GameStore {
           CREATE TABLE IF NOT EXISTS users (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
             username      TEXT NOT NULL UNIQUE,
-            password      TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
             registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
           )
         """;
@@ -72,17 +73,17 @@ public final class GameStore {
      */
     public User createUser(String username, char[] password) {
         try (var c = Database.open()) {
-            // ensure unique (case-insensitive)
             try (var chk = c.prepareStatement("SELECT 1 FROM users WHERE LOWER(username)=LOWER(?)")) {
                 chk.setString(1, username);
                 try (var rs = chk.executeQuery()) { if (rs.next()) throw new IllegalStateException("Username is taken"); }
             }
             int newId;
+            String hashed = PasswordUtils.hashPassword(password);
             try (var ins = c.prepareStatement(
-                    "INSERT INTO users(username, password) VALUES (?, ?)",
+                    "INSERT INTO users(username, password_hash) VALUES (?, ?)",
                     Statement.RETURN_GENERATED_KEYS)) {
                 ins.setString(1, username);
-                ins.setString(2, new String(password));
+                ins.setString(2, hashed);
                 ins.executeUpdate();
                 try (var keys = ins.getGeneratedKeys()) {
                     if (!keys.next()) throw new SQLException("No key");
@@ -104,12 +105,12 @@ public final class GameStore {
     public Optional<User> authenticate(String username, char[] password) {
         try (var c = Database.open();
              var ps = c.prepareStatement(
-                     "SELECT id, username, registered_at, password FROM users WHERE LOWER(username)=LOWER(?)")) {
+                     "SELECT id, username, registered_at, password_hash FROM users WHERE LOWER(username)=LOWER(?)")) {
             ps.setString(1, username);
             try (var rs = ps.executeQuery()) {
                 if (!rs.next()) return Optional.empty();
-                String stored = rs.getString("password");
-                if (!stored.equals(new String(password))) return Optional.empty();
+                String stored = rs.getString("password_hash");
+                if (!PasswordUtils.verifyPassword(password, stored)) return Optional.empty();
                 return Optional.of(new User(
                         rs.getInt("id"),
                         rs.getString("username"),
