@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;   // <-- added
 import static org.mockito.Mockito.*;
 
 public class TargetGameControllerTest {
@@ -43,10 +44,21 @@ public class TargetGameControllerTest {
 
     @BeforeAll
     static void initJavaFx() {
+        // Skip these tests entirely if no GUI/display is available (e.g., CI Linux runners)
+        assumeTrue(hasDisplay(), "needs GUI display");
+
         try {
             Platform.startup(() -> {});
         } catch (IllegalStateException ignored) {
+            // already started
         }
+    }
+
+    private static boolean hasDisplay() {
+        String os = System.getProperty("os.name", "").toLowerCase();
+        if (os.contains("win") || os.contains("mac")) return true; // desktop usually available
+        // Linux: require an X11/Wayland display variable
+        return System.getenv("DISPLAY") != null || System.getenv("WAYLAND_DISPLAY") != null;
     }
 
     @BeforeEach
