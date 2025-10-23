@@ -5,10 +5,12 @@ import main.java.com.team.game.model.GameSession;
 import main.java.com.team.game.model.ScoreRow;
 import main.java.com.team.game.model.User;
 import main.java.com.team.game.util.PasswordUtils;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * Data access layer for users and game sessions.
@@ -150,29 +152,15 @@ public final class GameStore {
     }
 
     /**
-     * Updates a user's password (stored as a BCrypt hash).
+     * Updates a user's password (stored as plaintext).
      */
     public void updatePassword(int userId, char[] newPassword) {
-        String raw = null;
         try (var c = Database.open();
-             var ps = c.prepareStatement("UPDATE users SET password_hash=? WHERE id=?")) {
-
-            raw = new String(newPassword);
-            String hash = BCrypt.hashpw(raw, BCrypt.gensalt(12));
-
-            ps.setString(1, hash);
+             var ps = c.prepareStatement("UPDATE users SET password=? WHERE id=?")) {
+            ps.setString(1, new String(newPassword));
             ps.setInt(2, userId);
             ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-
-            Arrays.fill(newPassword, '\0');
-            if (raw != null) {
-
-                raw = null;
-            }
-        }
+        } catch (SQLException e) { throw new RuntimeException(e); }
     }
 
     /**
