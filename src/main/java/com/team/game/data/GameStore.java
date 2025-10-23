@@ -7,10 +7,7 @@ import main.java.com.team.game.model.User;
 import main.java.com.team.game.util.PasswordUtils;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.*;
 
 /**
  * Data access layer for users and game sessions.
@@ -152,15 +149,24 @@ public final class GameStore {
     }
 
     /**
-     * Updates a user's password (stored as plaintext).
+     * Updates a user's password (stored as a BCrypt hash in password_hash).
      */
     public void updatePassword(int userId, char[] newPassword) {
+        // Make a defensive copy so we don't mutate the caller's array when hashing
+        char[] pwCopy = Arrays.copyOf(newPassword, newPassword.length);
         try (var c = Database.open();
-             var ps = c.prepareStatement("UPDATE users SET password=? WHERE id=?")) {
-            ps.setString(1, new String(newPassword));
+             var ps = c.prepareStatement("UPDATE users SET password_hash = ? WHERE id = ?")) {
+
+            String hash = PasswordUtils.hashPassword(pwCopy); // PasswordUtils wipes pwCopy
+            ps.setString(1, hash);
             ps.setInt(2, userId);
             ps.executeUpdate();
-        } catch (SQLException e) { throw new RuntimeException(e); }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            // pwCopy already wiped by PasswordUtils, but wipe again defensively
+            Arrays.fill(pwCopy, '\0');
+        }
     }
 
     /**
