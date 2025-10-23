@@ -2,9 +2,9 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "integration" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "integration" ]
 
 permissions:
   contents: write
@@ -23,46 +23,67 @@ jobs:
           cache: maven
 
 
+      - name: Ensure Maven + Wrapper
+        run: |
+          set -e
+          if ! command -v mvn >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y maven
+          fi
+          if [ ! -f mvnw ]; then
+            mvn -N -q org.apache.maven.plugins:maven-wrapper-plugin:3.2.0:wrapper -Dmaven=3.9.9
+          fi
+          chmod +x mvnw
+
+      - name: Headless display (JavaFX)
+        uses: pyvista/setup-headless-display-action@v3
+        with:
+          install: true
+
       - name: Build
         run: ./mvnw -B -e -DskipTests=false package
 
       - name: Generate Javadoc
         run: ./mvnw -B -e javadoc:javadoc
 
+      - name: Show Javadoc tree
+        run: |
+          echo "== target/docs/javadoc =="; ls -laR target/docs/javadoc || true
+          echo "== target/site/apidocs =="; ls -laR target/site/apidocs || true
 
-
-      # one-time: create gh-pages if missing
+      #
       - name: Create gh-pages branch if missing
-        if: github.event_name == 'push' && github.ref == 'refs/heads/integration'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration')
         run: |
           set -e
           if ! git ls-remote --exit-code --heads origin gh-pages &>/dev/null; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-
-            # Remember where we were so we can return after bootstrapping
             START_REF=$(git rev-parse --abbrev-ref HEAD)
-
             git checkout --orphan gh-pages
-            # Clean index and working tree without trying to delete '.'
             git reset --hard
             git clean -fdx
-
-            # Put a placeholder so the first push creates the branch
             echo "<!doctype html><title>Docs</title><h1>Initializing gh-pages…</h1>" > index.html
             git add index.html
             git commit -m "Initialize gh-pages"
             git push origin gh-pages
-
-            # Go back to the build branch
             git checkout "$START_REF"
           fi
 
-
       - name: Publish Javadoc
-        if: github.event_name == 'push' && github.ref == 'refs/heads/integration'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/integration')
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: target/docs/javadoc   # change to target/site/apidocs if that’s where yours land
+          folder: target/docs/javadoc
           clean: true
+
+      - name: Upload Javadoc artifact (fallback)
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadoc
+          path: |
+            target/docs/javadoc
+            target/site/apidocs
+          if-no-files-found: warn
+          retention-days: 7

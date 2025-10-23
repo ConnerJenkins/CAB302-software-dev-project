@@ -51,11 +51,19 @@ public class LoginController {
      *
      * @param username the username entered
      * @param password the password entered
-     * @return {@code Optional<User>} if credentials are valid, otherwise {@code Optional.empty()}     */
+     * @return {@code Optional<User>} if credentials are valid, otherwise {@code Optional.empty()}
+     */
     public Optional<User> checkUser(String username, char[] password) {
         if (svc == null) throw new IllegalStateException("GameService not set");
         if (username == null || password == null) return Optional.empty();
-        return svc.login(username.trim(), password);
+
+        // Defensive copy so tests can reuse the same char[] safely
+        char[] pwCopy = Arrays.copyOf(password, password.length);
+        try {
+            return svc.login(username.trim(), pwCopy);
+        } finally {
+            Arrays.fill(pwCopy, '\0'); // scrub the copy
+        }
     }
 
     /**
@@ -71,7 +79,14 @@ public class LoginController {
         String u = (username == null) ? "" : username.trim();
         if (u.isEmpty() || password == null || password.length == 0)
             throw new IllegalArgumentException("Username and password required");
-        return svc.register(u, password);
+
+        // Defensive copy so the service can safely wipe without mutating caller's array
+        char[] pwCopy = Arrays.copyOf(password, password.length);
+        try {
+            return svc.register(u, pwCopy);
+        } finally {
+            Arrays.fill(pwCopy, '\0'); // scrub the copy
+        }
     }
 
     // =====================================================
